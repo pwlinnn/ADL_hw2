@@ -65,22 +65,10 @@ def main():
             target = torch.cat((ans_start.unsqueeze(1), ans_end.unsqueeze(1)), dim=1).to(device)
             optimizer.zero_grad()
             output = model(pt)
-            #print('output: {}'.format(output.shape))
-            pred_start = output[:, :, 0]
-            pred_end = output[:, :, 1]
             output[:, :, 0].masked_fill_(mask, float('-inf')) 
             output[:, :, 1].masked_fill_(mask, float('-inf')) 
-            #print('start: {}'.format(pred_start.shape))
-            #print('end: {}'.format(pred_end.shape))
-            #start_loss = loss_fn(pred_start, ans_start)
-            #end_loss = loss_fn(pred_end, ans_end)
-            #nb.embed()
             loss = loss_fn(output, target)
-            #print(loss)
-            #print(loss)
-            #print('loss1 : {}, loss2: {}, loss3: {}'.format(loss1,loss2,loss3))
             cum_loss+=float(loss)
-            #print(loss)
             loss.backward()
             optimizer.step()
         print(cum_loss)
@@ -124,7 +112,6 @@ def main():
 def predict(MDL_PATH, DATA_PATH):
     batch_size=4
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    #start_candidates, end_candidates = [], []
     model = QAModel()
     model.to(device)
     optimizer = optim.SGD(model.parameters(), lr=3e-5)
@@ -186,7 +173,6 @@ def predict(MDL_PATH, DATA_PATH):
                 else:
                     s, e = results[0][1][0], results[0][1][1]
                     ids = pt['input_ids'][batch_idx][s:e]
-                    #print(tokenizer.decode(ids).replace(" ", ""))
                     dic[question_id[batch_idx]] = tokenizer.decode(ids).replace(" ", "")
 
     with open('prediction.json', 'w') as fp:
